@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagram Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        #game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #tiles {
+            margin-bottom: 20px;
+        }
+        .player {
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            margin-right: 10px;
+        }
+        #log {
+            margin-top: 20px;
+            width: 100%;
+            height: 150px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div id="tiles">Current Tiles: <span id="currentTiles"></span></div>
+        <div class="player" id="player1">
+            <input type="text" id="word1" placeholder="Player 1 Word">
+            <button onclick="formWord(1)">Form Word</button>
+            <div>Player 1 Words: <span id="words1"></span></div>
+        </div>
+        <div class="player" id="player2">
+            <input type="text" id="word2" placeholder="Player 2 Word">
+            <button onclick="formWord(2)">Form Word</button>
+            <div>Player 2 Words: <span id="words2"></span></div>
+        </div>
+        <div class="player" id="player3">
+            <input type="text" id="word3" placeholder="Player 3 Word">
+            <button onclick="formWord(3)">Form Word</button>
+            <div>Player 3 Words: <span id="words3"></span></div>
+        </div>
+        <div class="player" id="player4">
+            <input type="text" id="word4" placeholder="Player 4 Word">
+            <button onclick="formWord(4)">Form Word</button>
+            <div>Player 4 Words: <span id="words4"></span></div>
+        </div>
+        <div id="log"></div>
+    </div>
+    <script>
+        let tiles = createTiles();
+        let currentTiles = [];
+        let playerWords = [[], [], [], []];
+
+        function createTiles() {
+            let scrabbleDistribution = {
+                'A': 18, 'B': 4, 'C': 4, 'D': 8, 'E': 24, 'F': 4, 'G': 6, 'H': 4, 
+                'I': 18, 'J': 2, 'K': 2, 'L': 8, 'M': 4, 'N': 12, 'O': 16, 'P': 4, 
+                'Q': 2, 'R': 12, 'S': 8, 'T': 12, 'U': 8, 'V': 4, 'W': 4, 'X': 2, 
+                'Y': 4, 'Z': 2
+            };
+            let tiles = [];
+            for (let letter in scrabbleDistribution) {
+                for (let i = 0; i < scrabbleDistribution[letter]; i++) {
+                    tiles.push(letter);
+                }
+            }
+            return shuffleArray(tiles);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateCurrentTiles() {
+            currentTiles.push(tiles.pop());
+            document.getElementById('currentTiles').innerText = currentTiles.join(' ');
+        }
+
+        function formWord(playerNumber) {
+            let input = document.getElementById('word' + playerNumber);
+            let word = input.value.toUpperCase();
+            input.value = '';
+
+            if (isValidWord(word)) {
+                playerWords[playerNumber - 1].push(word);
+                for (let letter of word) {
+                    currentTiles.splice(currentTiles.indexOf(letter), 1);
+                }
+                document.getElementById('words' + playerNumber).innerText = playerWords[playerNumber - 1].join(', ');
+                document.getElementById('currentTiles').innerText = currentTiles.join(' ');
+                logMessage(`Player ${playerNumber} formed the word: ${word}`);
+            } else {
+                logMessage(`Invalid word or cannot form the word with available tiles.`);
+            }
+        }
+
+        function isValidWord(word) {
+            let tileCount = {};
+            for (let tile of currentTiles) {
+                tileCount[tile] = (tileCount[tile] || 0) + 1;
+            }
+            for (let letter of word) {
+                if (!tileCount[letter] || tileCount[letter] === 0) {
+                    return false;
+                }
+                tileCount[letter]--;
+            }
+            return word.length >= 4;
+        }
+
+        function logMessage(message) {
+            let log = document.getElementById('log');
+            log.innerHTML += `<div>${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        setInterval(updateCurrentTiles, 3000);
+    </script>
+</body>
+</html>
